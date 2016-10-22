@@ -1,0 +1,5 @@
+# NoMethodError: undefined method `keys' for Array
+
+# B. There is no method called keys for Array objects.
+
+[1, 2, 3].keys
