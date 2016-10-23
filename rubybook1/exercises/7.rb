@@ -1,0 +1,1 @@
+#hash contains key-value pair while array usualy does not

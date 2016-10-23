@@ -1,6 +1,4 @@
-words =  ['demo', 'none', 'tied', 'evil', 'dome', 'mode', 'live',
-          'fowl', 'veil', 'wolf', 'diet', 'vile', 'edit', 'tide',
-          'flow', 'neon']
+words =  ['demo', 'none', 'tied']
 
 result = {}
 
@@ -13,4 +11,4 @@ words.each do |word|
   end
 end
 
-result.each { |k, v| p v }
+p result
