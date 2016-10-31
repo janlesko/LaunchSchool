@@ -1,0 +1,34 @@
+1. a method that returns the sum of two integers:
+
+ask user for first integer
+save first interger into a variable
+
+ask user for second integer
+save second integer into a variable
+
+define a method with two parameters: first integer and second integer
+sum both integers and return the result
+
+launch the method passing in first integer and second integer as arguments and print the returned value
+
+-----
+
+2. a method that takes an array of strings, and returns a string that is all those strings concatenated together
+
+have an array of strings
+
+define a method with one parameter 
+concatenate parameter argumetn and return
+
+launch the method passing in the array of strings and print the returned value
+
+-----
+
+3. a method that takes an array of integers, and returns a new array with every other element
+
+given a collection of integers
+
+iterate through the collection one by one
+  - save only every other element
+
+after iterating throough the collection, return the saved values.
