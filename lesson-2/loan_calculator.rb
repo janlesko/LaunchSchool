@@ -59,4 +59,4 @@ loop do
   break unless choice.downcase.start_with?('y')
 end
 
-prompt("Thank you for using the Loan Calculator!")
+puts "Thank you for using the Loan Calculator!"
