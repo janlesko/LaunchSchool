@@ -5,7 +5,7 @@ end
 loop do
   puts "Hello, welcome to Loan Calculator!"
   puts "It will help you determine the monthly payments on a loan."
-  
+
   loan_amount = nil
   loop do
     puts "Enter the loan amount"
