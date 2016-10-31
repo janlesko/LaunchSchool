@@ -1,5 +1,5 @@
 def valid_number?(number)
-  number.to_i.to_s == number || number.to_f.to_s == number
+  (number.to_i.to_s == number || number.to_f.to_s == number) && number.to_i > 0
 end
 
 loop do
