@@ -55,9 +55,9 @@ loop do
   end
 
   puts "Do you wish to start calculation again? Press \"Y\" to confirm."
-  choice = gets.chomp
+  choice = gets.chomp.downcase
 
-  break unless choice.casecmp == "y"
+  break unless choice == "y"
 end
 
 puts "Thank you for using the Loan Calculator!"
