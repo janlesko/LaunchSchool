@@ -1,7 +1,23 @@
-VALID_CHOICES = ['rock', 'paper', 'scissors']
+VALID_CHOICES = %w(rock paper scissors)
 
 def prompt(message)
   puts "=> #{message}"
+end
+
+def win?(first, second)
+  (first == 'rock' && second == 'scissors') ||
+    (first == 'paper' && second == 'rock') ||
+    (first == 'scissors' && second == 'paper')
+end
+
+def display_results(player, computer)
+  if win?(player, computer)
+    prompt "You won!"
+  elsif win?(computer, player)
+    prompt "Computer won!"
+  else
+    prompt "It's a tie!"
+  end
 end
 
 loop do
@@ -13,7 +29,7 @@ loop do
     if VALID_CHOICES.include?(choice)
       break
     else
-      promp "That's not a valid choice."
+      prompt "That's not a valid choice."
     end
   end
 
@@ -21,19 +37,9 @@ loop do
 
   prompt "You chose: #{choice}; Computer chose: #{computer_choice}"
 
-  if (choice == 'rock' && computer_choice == 'scissors') ||
-      (choice == 'paper' && computer_choice == 'rock') ||
-      (choice == 'scissors' && computer_choice == 'paper')
-    prompt "You won!"
-  elsif (choice == 'rock' && computer_choice == 'paper') ||
-        (choice == 'paper' && computer_choice == 'scissors') ||
-        (choice == 'scissors' && computer_choice == 'rock')
-      prompt "Computer won!"
-  else
-    prompt "It's a tie!"
-  end
+  display_results(choice, computer_choice)
+
   prompt "Do you want to play again? Hit \"Y\" if yes."
   answer = gets.chomp.downcase
-  break unless answer = "y"
+  break unless answer == "y"
 end
-
