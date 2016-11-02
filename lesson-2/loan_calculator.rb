@@ -26,10 +26,10 @@ loop do
   loan_duration_years = nil
   loan_duration_months = nil
   loop do
-    puts "Select the loan duration in months"
-    loan_duration_months = gets.chomp
     puts "Select the loan duration in years"
     loan_duration_years = gets.chomp
+    puts "Select the loan duration in months"
+    loan_duration_months = gets.chomp
     break if valid_number?(loan_duration_months) &&
              valid_number?(loan_duration_years)
     puts "That is not a valid number."
@@ -37,17 +37,19 @@ loop do
 
   annual_perc_rate = annual_perc_rate.to_f / 100
   monthly_perc_rate = annual_perc_rate / 12
-  loan_duration_months = loan_duration_months.to_i +
-                         loan_duration_years.to_i * 12
 
   if monthly_perc_rate.zero?
-    monthly_payment = loan_amount.to_f / loan_duration_months
+    monthly_payment = loan_amount.to_f /
+                      (loan_duration_months.to_i +
+                      loan_duration_years.to_i * 12)
   else
     monthly_payment = loan_amount.to_f * (monthly_perc_rate /
-                      (1 - (1 + monthly_perc_rate)**-loan_duration_months))
+                      (1 - (1 + monthly_perc_rate)**-
+                      (loan_duration_months.to_i +
+                      loan_duration_years.to_i * 12)))
   end
 
-  if loan_duration_months.zero?
+  if loan_duration_months.to_i.zero? && loan_duration_years.to_i.zero?
     puts "The loan of $" + loan_amount +
          " needs to be paid back as soon as it is received."
   else
