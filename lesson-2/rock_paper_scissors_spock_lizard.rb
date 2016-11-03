@@ -1,39 +1,49 @@
 VALID_CHOICES = %w(rock paper scissors spock lizard)
 
+WINNER_SCORE = 5
+
+SHORTCUTS = { r: "rock",
+              p: "paper",
+              s: "scissors",
+              k: "spock",
+              l: "lizard" }
+
+WINNING_COMBINATION = { rock:     %w(scissors lizard),
+                        paper:    %(rock spock),
+                        scissors: %(paper lizard),
+                        spock:    %(scissors rock),
+                        lizard:   %(paper spock) }
+
 def prompt(message)
   puts "=> #{message}"
 end
 
-def translate_shortcut(shortcut)
-  case shortcut
-  when "ro" then "rock"
-  when "pa" then "paper"
-  when "sc" then "scissors"
-  when "sp" then "spock"
-  when "li" then "lizard"
+def clear_screen
+  system('clear') || system('cls')
+end
+
+def determine_winner(choice, computer_choice)
+  if computer_choice == choice
+    "tie"
+  elsif WINNING_COMBINATION[choice.to_sym].include?(computer_choice)
+    "player"
+  else
+    "computer"
   end
 end
 
-def win?(first, second)
-  (first == 'rock' && %w(scissors lizard).include?(second)) ||
-    (first == 'paper' && %w(rock spock).include?(second)) ||
-    (first == 'scissors' && %w(paper lizard).include?(second)) ||
-    (first == 'spock' && %w(scissors rock).include?(second)) ||
-    (first == 'lizard' && %w(paper spock).include?(second))
-end
-
-def display_results(player, computer)
-  if win?(player, computer)
-    prompt "You won the round!"
-  elsif win?(computer, player)
-    prompt "Computer won the round!"
+def display_results(winner)
+  if winner == "player"
+    prompt "You won this round!"
+  elsif winner == "computer"
+    prompt "Computer won this round!"
   else
-    prompt "It's a tie!"
+    prompt "This round is a tie!"
   end
 end
 
 prompt "Welcome to the **Rock Paper Scissors Spock Lizard** Game"
-prompt "First to reach 5 points wins!"
+prompt "First to reach #{WINNER_SCORE} points wins!"
 
 your_score = 0
 computer_score = 0
@@ -41,17 +51,18 @@ loop do
   choice = nil
   loop do
     shortcut_prompt = <<-MSG
-      Make a choice by hitting keys:
-          \"RO\" for rock
-          \"PA\" for paper
-          \"SC\" for scissors
-          \"SP\" for spock
-          \"LI\" for lizard"
+      Make a choice by hitting a key:
+          \"R\" for rock
+          \"P\" for paper
+          \"S\" for scissors
+          \"K\" for spock
+          \"L\" for lizard"
     MSG
 
     prompt(shortcut_prompt)
-    ask_shortcut = gets.chomp.downcase
-    choice = translate_shortcut(ask_shortcut)
+    ask_shortcut = gets.chomp.downcase.to_sym
+    clear_screen
+    choice = SHORTCUTS[ask_shortcut]
 
     if VALID_CHOICES.include?(choice)
       break
@@ -63,23 +74,32 @@ loop do
   computer_choice = VALID_CHOICES.sample
 
   prompt "You chose: #{choice}; Computer chose: #{computer_choice}"
-  display_results(choice, computer_choice)
+  display_results(determine_winner(choice, computer_choice))
 
-  your_score += 1 if win?(choice, computer_choice)
-  computer_score += 1 if win?(computer_choice, choice)
+  if determine_winner(choice, computer_choice) == "player"
+    your_score += 1
+  elsif determine_winner(choice, computer_choice) == "computer"
+    computer_score += 1
+  end
 
   prompt "Your score is: #{your_score} | Computer score is: #{computer_score}"
 
-  if your_score == 5
+  if your_score == WINNER_SCORE
     prompt "You won the game!"
-  elsif computer_score == 5
+  elsif computer_score == WINNER_SCORE
     prompt "Computer won the game!"
   end
 
-  next unless your_score == 5 || computer_score == 5
+  next unless your_score == WINNER_SCORE || computer_score == WINNER_SCORE
 
-  prompt "Do you want to play again? Hit \"Y\" if yes."
-  answer = gets.chomp.downcase
+  answer = nil
+  loop do
+    prompt "Do you want to play again? Hit \"Y\" if yes."
+    answer = gets.chomp.downcase
+    break if %w(y yes n no).include?(answer)
+    prompt "Sorry, that is not a valid answer."
+  end
+
   break unless %w(y yes).include?(answer)
   your_score = 0
   computer_score = 0
