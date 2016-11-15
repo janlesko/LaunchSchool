@@ -32,7 +32,7 @@ def calculate_total(hand)
 end
 
 def busted?(hand)
-  calculate_total(hand) > 21 ? true : false
+  calculate_total(hand) > 21
 end
 
 def determine_winner(player, dealer)
