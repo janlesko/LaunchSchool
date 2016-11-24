@@ -1,4 +1,5 @@
-SUITS = %w(H D S C).freeze
+SUITS = { 'H' => 'Hearts', 'D' => 'Diamonds',
+          'S' => 'Spades', 'C' => 'Clubs' }.freeze
 VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A).freeze
 WIN_SCORE = 21
 DEALER_LIMIT = (WIN_SCORE - 4)
@@ -13,7 +14,17 @@ def clear_screen
 end
 
 def initialize_deck
-  SUITS.product(VALUES).shuffle
+  SUITS.keys.product(VALUES).shuffle
+end
+
+def card_value(value)
+  if value = 'A'
+    11
+  elsif value.to_i.zero?
+    10
+  else
+    value.to_i
+  end
 end
 
 def total(cards)
@@ -21,16 +32,10 @@ def total(cards)
 
   sum = 0
   values.each do |value|
-    sum += if value == 'A'
-             11
-           elsif value.to_i.zero?
-             10
-           else
-             value.to_i
-           end
+    sum += card_value(value)
   end
 
-  values.select { |value| value == 'A' }.count.times do
+  values.count('A').times do
     sum -= 10 if sum > WIN_SCORE
   end
 
@@ -75,6 +80,11 @@ def display_result(dealer_cards, player_cards)
   end
 end
 
+def press_to_continue
+  prompt "Press enter to continue"
+  gets
+end
+
 def play_again?
   loop do
     puts "Play again? y/n"
@@ -97,7 +107,8 @@ def initial_round(player_cards, dealer_cards, deck)
 end
 
 def display_round_summary(dealer_cards, player_cards, display_mode=:all)
-  case mode
+
+  case display_mode
   when :all
     puts "==========="
     prompt "Dealer has #{dealer_cards}, for a total of: #{total(dealer_cards)}"
@@ -105,7 +116,8 @@ def display_round_summary(dealer_cards, player_cards, display_mode=:all)
   when :hidden
     puts "==========="
     prompt "Dealer has #{dealer_cards[0]} and ?"
-    prompt "You have #{player_cards}, for a total of: #{total(player_cards)}" 
+    prompt "You have #{player_cards}, for a total of: #{total(player_cards)}"
+  end
 end
 
 player_score = 0
@@ -123,7 +135,7 @@ loop do
 
   initial_round(player_cards, dealer_cards, deck)
 
-  display_round_summary(dealer_cards, player_cards)
+  display_round_summary(dealer_cards, player_cards, :hidden)
 
   loop do
     player_turn = nil
