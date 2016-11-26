@@ -18,7 +18,7 @@ def initialize_deck
 end
 
 def card_value(value)
-  if value = 'A'
+  if value == 'A'
     11
   elsif value.to_i.zero?
     10
@@ -29,7 +29,6 @@ end
 
 def total(cards)
   values = cards.map { |card| card[1] }
-
   sum = 0
   values.each do |value|
     sum += card_value(value)

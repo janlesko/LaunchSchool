@@ -1,8 +1,7 @@
-SUITS = %w(H D S C).freeze
-VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A).freeze
+SUITS = %w(hearts diamonds clubs spades).freeze
+VALUES = %w(2 3 4 5 6 7 8 9 10 jack queen king ace).freeze
 WIN_SCORE = 21
 DEALER_LIMIT = (WIN_SCORE - 4)
-WIN_ROUNDS = 5
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -16,62 +15,97 @@ def initialize_deck
   SUITS.product(VALUES).shuffle
 end
 
-def total(cards)
-  values = cards.map { |card| card[1] }
-
-  sum = 0
-  values.each do |value|
-    sum += if value == 'A'
-             11
-           elsif value.to_i.zero?
-             10
-           else
-             value.to_i
-           end
-  end
-
-  values.select { |value| value == 'A' }.count.times do
-    sum -= 10 if sum > WIN_SCORE
-  end
-
-  sum
+def draw_card(from_deck, to_whom)
+  to_whom << from_deck.pop
 end
 
-def busted?(cards)
-  total(cards) > WIN_SCORE
+def calculate_total(deck)
+  total = 0
+
+  deck.each do |card|
+    total += 10 if card[1].to_i.zero?
+    total += 11 if card[1] == 'ace'
+    total += card[1].to_i
+  end
+
+  deck.select { |card| card == 'ace' }.count.times do
+    total -= 10 if total > WIN_SCORE
+  end
+
+  total
 end
 
-def detect_result(dealer_cards, player_cards)
-  player_total = total(player_cards)
-  dealer_total = total(dealer_cards)
+def busted?(deck)
+  calculate_total(deck) > WIN_SCORE
+end
+
+def initial_round(player_deck, dealer_deck, deck)
+  2.times do
+    draw_card(deck, player_deck)
+    draw_card(deck, dealer_deck)
+  end
+end
+
+def display_cards_and_total(player_deck, dealer_deck, mode)
+  case mode
+  when 'player'
+    prompt "Your cards are #{player_deck}"
+    prompt "Your total value is: #{calculate_total(player_deck)}"
+  when 'dealer'
+    prompt "Dealer's cards are #{dealer_deck}"
+    prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
+  when 'initial'
+    prompt "Your cards are #{player_deck}"
+    prompt "Your total value is: #{calculate_total(player_deck)}"
+    prompt "Dealer's cards are #{dealer_deck[1]} and ?"
+  end
+end
+
+def diplay_summary(player_deck, dealer_deck)
+  puts "============================SUMMARY============================"
+  prompt "Your cards are #{player_deck}"
+  prompt "Your total value is: #{calculate_total(player_deck)}"
+  prompt "Dealer's cards are #{dealer_deck}"
+  prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
+end
+
+def hit_or_stay
+  answer = nil
+  loop do
+    prompt "Would you like to (h)it or (s)tay?"
+    answer = gets.chomp.downcase
+    break if %w(h s).include?(answer)
+    prompt "Sorry, please enter 'h' or 's'."
+  end
+  answer
+end
+
+def determine_result(player_deck, dealer_deck)
+  player_total = calculate_total(player_deck)
+  dealer_total = calculate_total(dealer_deck)
 
   if player_total > WIN_SCORE
     :player_busted
   elsif dealer_total > WIN_SCORE
     :dealer_busted
-  elsif dealer_total < player_total
+  elsif player_total > dealer_total
     :player
-  elsif dealer_total > player_total
+  elsif player_total < dealer_total
     :dealer
   else
     :tie
   end
 end
 
-def display_result(dealer_cards, player_cards)
-  result = detect_result(dealer_cards, player_cards)
+def display_result(player_deck, dealer_deck)
+  result = determine_result(player_deck, dealer_deck)
 
   case result
-  when :player_busted
-    prompt "You busted! Dealer wins"
-  when :dealer_busted
-    prompt "Dealer busted! You win"
-  when :player
-    prompt "You win!"
-  when :dealer
-    prompt "Dealer wins!"
-  when :tie
-    prompt "It's a tie!"
+  when :tie then prompt "It's a tie!"
+  when :player then prompt "You won!"
+  when :dealer then prompt "Dealer won!"
+  when :player_busted then prompt "You busted. Dealer won!"
+  when :dealer_busted then prompt "Dealer busted. You won!"
   end
 end
 
@@ -89,95 +123,45 @@ def play_again?
   end
 end
 
-def initial_round(player_cards, dealer_cards, deck)
-  2.times do
-    player_cards << deck.pop
-    dealer_cards << deck.pop
-  end
-end
-
-def display_round_summary(dealer_cards, player_cards, display_mode=:all)
-  case mode
-  when :all
-    puts "==========="
-    prompt "Dealer has #{dealer_cards}, for a total of: #{total(dealer_cards)}"
-    prompt "You have #{player_cards}, for a total of: #{total(player_cards)}"
-  when :hidden
-    puts "==========="
-    prompt "Dealer has #{dealer_cards[0]} and ?"
-    prompt "You have #{player_cards}, for a total of: #{total(player_cards)}" 
-end
-
-player_score = 0
-dealer_score = 0
-
 loop do
   clear_screen
-
-  prompt "First to #{WIN_ROUNDS} wins"
-  prompt "Player score: #{player_score} / Dealer_score: #{dealer_score}"
-
   deck = initialize_deck
-  player_cards = []
-  dealer_cards = []
 
-  initial_round(player_cards, dealer_cards, deck)
+  player_deck = []
+  dealer_deck = []
 
-  display_round_summary(dealer_cards, player_cards)
+  initial_round(player_deck, dealer_deck, deck)
+
+  display_cards_and_total(player_deck, dealer_deck, 'initial')
 
   loop do
-    player_turn = nil
     loop do
-      prompt "Would you like to (h)it or (s)tay?"
-      player_turn = gets.chomp.downcase
-      break if %w(h s).include?(player_turn)
-      prompt "Sorry, please enter 'h' or 's'."
+      break if busted?(player_deck) || hit_or_stay == 's'
+      prompt "You hit!"
+      draw_card(deck, player_deck)
+      display_cards_and_total(player_deck, dealer_deck, 'player')
     end
 
-    if player_turn == 'h'
-      player_cards << deck.pop
-      prompt "You chose to hit!"
-      prompt "Your cards are now: #{player_cards}"
-      prompt "Your total is now: #{total(player_cards)}"
+    break if busted?(player_deck)
+
+    prompt "You chose to stay."
+    prompt "Dealer's turn..."
+
+    loop do
+      break if calculate_total(dealer_deck) > 17 || busted?(dealer_deck)
+      prompt "Dealer hits!"
+      draw_card(deck, dealer_deck)
+      display_cards_and_total(player_deck, dealer_deck, 'dealer')
     end
 
-    break if player_turn == 's' || busted?(player_cards)
+    break if busted?(dealer_deck)
+
+    prompt "Dealer chose to stay."
+    break
   end
 
-  if busted?(player_cards)
-    display_result(dealer_cards, player_cards)
-    play_again? ? next : break
-  else
-    prompt "You stayed at #{total(player_cards)}"
-  end
-
-  prompt "Dealer turn..."
-
-  loop do
-    break if total(dealer_cards) >= DEALER_LIMIT || busted?(dealer_cards)
-
-    prompt "Dealer hits!"
-    dealer_cards << deck.pop
-    prompt "Dealer's cards are now: #{dealer_cards}"
-  end
-
-  if busted?(dealer_cards)
-    prompt "Dealer total is now: #{total(dealer_cards)}"
-    display_result(dealer_cards, player_cards)
-    play_again? ? next : break
-  else
-    prompt "Dealer stays at #{total(dealer_cards)}"
-  end
-
-  display_round_summary(dealer_cards, player_cards)
-  display_result(dealer_cards, player_cards)
-
-  case detect_result(dealer_cards, player_cards)
-  when :player
-    player_score += 1
-  when :dealer
-    dealer_score += 1
-  end
+  diplay_summary(player_deck, dealer_deck)
+  display_result(player_deck, dealer_deck)
 
   break unless play_again?
 end

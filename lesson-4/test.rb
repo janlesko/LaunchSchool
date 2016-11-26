@@ -1,26 +1,14 @@
-SUITS = { 'H' => 'Hearts', 'D' => 'Diamonds',
-          'S' => 'Spades', 'C' => 'Clubs' }.freeze
+SUITS = ['H', 'D', 'S', 'C'].freeze
 VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A).freeze
-MAX_NUM = 21
-DEALER_THRESHOLD = 17
-ROUNDS_TO_WIN = 5
+WIN_NUM = 21
+DEALER_GOAL = 17
 
 def prompt(msg)
   puts "=> #{msg}"
 end
 
 def initialize_deck
-  SUITS.keys.product(VALUES).shuffle
-end
-
-def card_value(value)
-  if value == 'A'
-    11
-  elsif value.to_i.zero? # J, Q, K
-    10
-  else
-    value.to_i
-  end
+  SUITS.product(VALUES).shuffle
 end
 
 def total(cards)
@@ -28,220 +16,208 @@ def total(cards)
 
   sum = 0
   values.each do |value|
-    sum += card_value(value)
+    sum += 11 if value == 'A'
+    sum += 10 if %w(J Q K).include?(value)
+    sum += value.to_i unless value.to_i.zero?
   end
 
-  # correct for Aces
-  values.count('A').times do
-    sum -= 10 if sum > MAX_NUM
+  values.select { |value| value == 'A' }.count.times do
+    sum -= 10 if sum > WIN_NUM
   end
 
   sum
 end
 
-def busted?(cards)
-  total(cards) > MAX_NUM
+def busted?(card_total)
+  card_total > WIN_NUM
 end
 
-# :tie, :dealer, :player, :dealer_busted, :player_busted
-def detect_result(dealer_cards, player_cards)
-  player_total = total(player_cards)
-  dealer_total = total(dealer_cards)
+def detect_result(dealer_total, player_total)
+  return :player_busted if player_total > WIN_NUM
+  return :dealer_busted if dealer_total > WIN_NUM
+  return :player if player_total > dealer_total
+  return :dealer if dealer_total > player_total
+  :tie
+end
 
-  if player_total > MAX_NUM
-    :player_busted
-  elsif dealer_total > MAX_NUM
-    :dealer_busted
-  elsif dealer_total < player_total
-    :player
-  elsif dealer_total > player_total
-    :dealer
-  else
-    :tie
+def tally(result, score)
+  case result
+  when :player_busted, :dealer
+    score[:dealer] += 1
+  when :dealer_busted, :player
+    score[:player] += 1
   end
 end
 
-def display_result(dealer_cards, player_cards)
-  result = detect_result(dealer_cards, player_cards)
+def display_score(score)
+  prompt "Player: #{score[:player]} -- Dealer: #{score[:dealer]}"
+  next_round
+end
+
+def next_round
+  prompt "Press any key to continue."
+  gets
+end
+
+def display_results(dealer_total, player_total)
+  result = detect_result(dealer_total, player_total)
 
   case result
   when :player_busted
-    prompt 'You busted! Dealer wins this round!'
+    prompt "You busted! Dealer wins!"
   when :dealer_busted
-    prompt 'Dealer busted! You win this round!'
+    prompt "Dealer busted! You win!"
   when :player
-    prompt 'You win this round!'
+    prompt "You win!"
   when :dealer
-    prompt 'Dealer wins this round!'
+    prompt "Dealer wins!"
   when :tie
-    prompt 'This round is a tie!'
+    prompt "It's a tie!"
   end
 end
 
 def play_again?
-  puts '-------------'
-  prompt 'Do you want to play again? (y or n)'
-  answer = ''
   loop do
-    answer = gets.chomp.downcase
-    break if answer == 'y' || answer == 'n'
-    prompt 'Not valid, must be y or n'
+    puts "-------------"
+    prompt "Do you want to play again? (y/n)"
+    answer = gets.chomp.downcase.strip
+    break if ['y', 'yes'].include?(answer)
+    return false if ['n', 'no'].include?(answer)
+    prompt "Sorry, you must enter either 'y' or 'n'"
   end
-  answer == 'y'
+  true
 end
 
-def press_to_continue
-  prompt '(Press any key to continue...)'
-  gets
+def display_initial_hands(dealer_cards, player_cards, player_total)
+  prompt "Dealer has #{dealer_cards[0]} and ?"
+  prompt "You have: #{player_cards[0]} and #{player_cards[1]}, \
+for a total of #{player_total}."
 end
 
-def match_complete?(player_won, dealer_won)
-  player_won == ROUNDS_TO_WIN || dealer_won == ROUNDS_TO_WIN
+def hit(hand, deck)
+  hand << deck.pop
 end
 
-def cards_output_format(arr)
-  string = ''
-  arr.each_with_index do |item, index|
-    string << item.to_s
-    string << ', ' unless arr.size == (index + 1)
-  end
-  string
-end
-
-def end_of_round_output(dealer_cards, player_cards)
-  puts '=============='
-  print "=> Dealer has #{cards_output_format(dealer_cards)},"
-  puts " for a total of: #{total(dealer_cards)}"
-  print "=> Player has #{cards_output_format(player_cards)},"
-  puts " for a total of: #{total(player_cards)}"
-  puts '=============='
-end
-
-def show_cards(cards, role)
-  cards.each_with_index do |card, index|
-    msg = "#{card[1]} of #{SUITS[card[0]]}"
-    if index.zero?
-      puts msg
-    elsif role == 'player'
-      puts msg.rjust(23 + msg.size)
-    elsif role == 'dealer'
-      puts msg.rjust(27 + msg.size)
-    end
+def deal_cards(player_cards, dealer_cards, deck)
+  2.times do
+    hit(player_cards, deck)
+    hit(dealer_cards, deck)
   end
 end
 
-# ----------- program start ----------------
+def display_hand_after_hit(player_cards, player_total)
+  prompt "You chose to hit!"
+  prompt "Your cards are now: #{player_cards}"
+  prompt "Your total is now: #{player_total}"
+end
 
-# loop to play again
-# rubocop: disable Metrics/BlockLength
+def hit_or_stay
+  player_turn = nil
+  loop do
+    prompt "Would you like to (h)it or (s)tay?"
+    player_turn = gets.chomp.downcase.strip
+    break if ['h', 's'].include?(player_turn)
+    prompt "Sorry, must enter 'h' or 's'."
+  end
+  player_turn
+end
+
+def display_hands(p_cards, d_cards, p_total, d_total)
+  puts "================"
+  prompt "Dealer total: #{d_total} with #{d_cards}"
+  prompt "Player total: #{p_total} with #{p_cards}"
+  puts "================"
+end
+
+def winner?(score)
+  score.values.include?(5)
+end
+
+def determine_winner(score)
+  winner = "Player" if score[:player] == 5
+  winner = "Dealer" if score[:dealer] == 5
+  winner
+end
+
+def display_winner(score)
+  puts "========================="
+  puts "*************************"
+  puts " "
+  puts "#{determine_winner(score)} Wins!"
+  puts " "
+  puts "*************************"
+  puts "========================="
+end
+
+system 'clear'
+prompt "Welcome to Twenty-One!"
+sleep 1.5
+
 loop do
-  # loop to play five rounds
-  player_won = 0
-  dealer_won = 0
-
+  score = { player: 0, dealer: 0 }
   loop do
-    system('clear') || system('cls')
-    msg = <<-MSG
-Welcome to Twenty-One!
-   Who wins #{ROUNDS_TO_WIN} rounds first wins the game!
-   Player won #{player_won} rounds / Dealer won #{dealer_won} rounds
-    MSG
-    prompt msg
-
-    # initialize vars
+    system 'clear'
     deck = initialize_deck
     player_cards = []
     dealer_cards = []
 
-    # initial deal
-    2.times do
-      player_cards << deck.pop
-      dealer_cards << deck.pop
-    end
+    deal_cards(player_cards, dealer_cards, deck)
+    player_total = total(player_cards)
+    dealer_total = total(dealer_cards)
+    display_initial_hands(dealer_cards, player_cards, player_total)
 
-    prompt "Dealer has #{dealer_cards[0]} and ?"
-    print "=> You have: #{player_cards[0]} and #{player_cards[1]}, "
-    puts "for a total of #{total(player_cards)}."
-
-    # player turn
     loop do
-      player_turn = nil
-      loop do
-        prompt 'Would you like to (h)it or (s)tay?'
-        player_turn = gets.chomp.downcase
-        break if %w(h s).include?(player_turn)
-        prompt "Sorry, must enter 'h' or 's'."
-      end
-
+      player_turn = hit_or_stay
       if player_turn == 'h'
-        player_cards << deck.pop
-        prompt 'You chose to hit!'
-        print "=> Your cards are now: "
-        show_cards(player_cards, 'player')
-        prompt "Your total is now: #{total(player_cards)}"
+        hit(player_cards, deck)
+        player_total = total(player_cards)
+        display_hand_after_hit(player_cards, player_total)
       end
 
-      break if player_turn == 's' || busted?(player_cards)
+      break if player_turn == 's' || busted?(player_total)
     end
 
-    if busted?(player_cards)
-      end_of_round_output(dealer_cards, player_cards)
-      display_result(dealer_cards, player_cards)
-      dealer_won += 1
-      break if match_complete?(player_won, dealer_won)
-      press_to_continue
-      next
+    if busted?(player_total)
+      tally(detect_result(dealer_total, player_total), score)
+      display_hands(player_cards, dealer_cards, player_total, dealer_total)
+      display_results(dealer_total, player_total)
+      display_score(score)
+      winner?(score) ? break : next
     else
-      prompt "You stayed at #{total(player_cards)}"
+      prompt "You stayed at #{player_total}"
     end
 
-    # dealer turn
-    prompt 'Dealer turn...'
+    prompt "Dealer turn..."
 
     loop do
-      break if busted?(dealer_cards) || total(dealer_cards) >= DEALER_THRESHOLD
+      break if busted?(dealer_total) || dealer_total >= DEALER_GOAL
 
-      prompt 'Dealer hits!'
-      dealer_cards << deck.pop
-      print "=> Dealer's cards are now: "
-      show_cards(dealer_cards, 'dealer')
+      prompt "Dealer hits!"
+      hit(dealer_cards, deck)
+      dealer_total = total(dealer_cards)
+      prompt "Dealer's cards are now: #{dealer_cards}"
     end
 
-    if busted?(dealer_cards)
-      prompt "Dealer total is now: #{total(dealer_cards)}"
-      end_of_round_output(dealer_cards, player_cards)
-      display_result(dealer_cards, player_cards)
-      player_won += 1
-      break if match_complete?(player_won, dealer_won)
-      press_to_continue
-      next
+    if busted?(dealer_total)
+      tally(detect_result(dealer_total, player_total), score)
+      prompt "Dealer total is now: #{dealer_total}"
+      display_results(dealer_total, player_total)
+      display_score(score)
+      winner?(score) ? break : next
     else
-      prompt "Dealer stays at #{total(dealer_cards)}"
+      prompt "Dealer stays at #{dealer_total}"
     end
 
-    # both player and dealer stays - compare cards!
-    end_of_round_output(dealer_cards, player_cards)
-    display_result(dealer_cards, player_cards)
+    display_hands(player_cards, dealer_cards, player_total, dealer_total)
+    tally(detect_result(dealer_total, player_total), score)
+    display_results(dealer_total, player_total)
+    display_score(score)
 
-    case detect_result(dealer_cards, player_cards)
-    when :player
-      player_won += 1
-    when :dealer
-      dealer_won += 1
-    end
-
-    break if match_complete?(player_won, dealer_won)
-    press_to_continue
+    winner?(score) ? break : next
   end
 
-  if player_won == ROUNDS_TO_WIN
-    prompt "You won #{ROUNDS_TO_WIN} rounds. You win the game!"
-  else
-    prompt "Dealer won #{ROUNDS_TO_WIN} rounds. Dealer wins the game!"
-  end
-
+  display_winner(score)
   break unless play_again?
 end
-# rubocop: enable Metrics/BlockLength
-
-prompt 'Thank you for playing Twenty-One! Good bye!'
+system 'clear'
+prompt "Thank you for playing Twenty-One! Good bye!"
