@@ -16,8 +16,7 @@ NUMBER_WORDS = %w(zero one two three four
 # end
 
 def alphabetic_number_sort(numbers)
-  array = NUMBER_WORDS.product(numbers)
-  p array
+  number.sort { |x, y| NUMBER_WORDS[x] <=> NUMBER_WORDS[y] }
 end
 
 alphabetic_number_sort((0..19).to_a)
