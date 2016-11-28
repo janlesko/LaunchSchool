@@ -1,7 +1,7 @@
 SUITS = %w(hearts diamonds clubs spades).freeze
 VALUES = %w(2 3 4 5 6 7 8 9 10 jack queen king ace).freeze
 WIN_SCORE = 21
-DEALER_LIMIT = (WIN_SCORE - 4)
+DELR_LIMIT = (WIN_SCORE - 4)
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -19,16 +19,25 @@ def draw_card(from_deck, to_whom)
   to_whom << from_deck.pop
 end
 
-def calculate_total(deck)
-  total = 0
+def card_values(card)
+  if card == 'ace'
+    11
+  elsif card.to_i.zero?
+    10
+  else
+    card.to_i
+  end
+end
 
-  deck.each do |card|
-    total += 10 if card[1].to_i.zero?
-    total += 11 if card[1] == 'ace'
-    total += card[1].to_i
+def calculate_total(deck)
+  cards = deck.map { |card| card[1] }
+
+  total = 0
+  cards.each do |card|
+    total += card_values(card)
   end
 
-  deck.select { |card| card == 'ace' }.count.times do
+  cards.count('ace').times do
     total -= 10 if total > WIN_SCORE
   end
 
@@ -46,27 +55,30 @@ def initial_round(player_deck, dealer_deck, deck)
   end
 end
 
-def display_cards_and_total(player_deck, dealer_deck, mode)
-  case mode
-  when 'player'
-    prompt "Your cards are #{player_deck}"
-    prompt "Your total value is: #{calculate_total(player_deck)}"
-  when 'dealer'
-    prompt "Dealer's cards are #{dealer_deck}"
-    prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
-  when 'initial'
-    prompt "Your cards are #{player_deck}"
-    prompt "Your total value is: #{calculate_total(player_deck)}"
-    prompt "Dealer's cards are #{dealer_deck[1]} and ?"
-  end
+def display_cards_and_total_initial(player_deck, dealer_deck)
+  prompt "Your cards are: #{format_card_message(player_deck).join}"
+  prompt "Your total value is: #{calculate_total(player_deck)}"
+  prompt "Dealer's cards are: #{format_card_message(dealer_deck).first}and  ?"
 end
 
-def diplay_summary(player_deck, dealer_deck)
-  puts "============================SUMMARY============================"
-  prompt "Your cards are #{player_deck}"
+def display_cards_and_total_player(player_deck)
+  prompt "Your cards are: #{format_card_message(player_deck).join}"
   prompt "Your total value is: #{calculate_total(player_deck)}"
-  prompt "Dealer's cards are #{dealer_deck}"
+end
+
+def display_cards_and_total_dealer(dealer_deck)
+  prompt "Dealer's cards are: #{format_card_message(dealer_deck).join}"
   prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
+end
+
+def format_card_message(deck)
+  output = []
+  symbols = { 'hearts' => '♥', 'clubs' => '♣',
+              'spades' => '♠', 'diamonds' => '♦' }
+  deck.each do |card|
+    output << "#{symbols[card[0]]} #{card[1]}  "
+  end
+  output
 end
 
 def hit_or_stay
@@ -131,15 +143,14 @@ loop do
   dealer_deck = []
 
   initial_round(player_deck, dealer_deck, deck)
-
-  display_cards_and_total(player_deck, dealer_deck, 'initial')
+  display_cards_and_total_initial(player_deck, dealer_deck)
 
   loop do
     loop do
       break if busted?(player_deck) || hit_or_stay == 's'
       prompt "You hit!"
       draw_card(deck, player_deck)
-      display_cards_and_total(player_deck, dealer_deck, 'player')
+      display_cards_and_total_player(player_deck)
     end
 
     break if busted?(player_deck)
@@ -148,10 +159,10 @@ loop do
     prompt "Dealer's turn..."
 
     loop do
-      break if calculate_total(dealer_deck) > 17 || busted?(dealer_deck)
+      display_cards_and_total_dealer(dealer_deck)
+      break if calculate_total(dealer_deck) > DELR_LIMIT || busted?(dealer_deck)
       prompt "Dealer hits!"
       draw_card(deck, dealer_deck)
-      display_cards_and_total(player_deck, dealer_deck, 'dealer')
     end
 
     break if busted?(dealer_deck)
@@ -160,7 +171,6 @@ loop do
     break
   end
 
-  diplay_summary(player_deck, dealer_deck)
   display_result(player_deck, dealer_deck)
 
   break unless play_again?
