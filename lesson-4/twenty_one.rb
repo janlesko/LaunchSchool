@@ -2,6 +2,7 @@ SUITS = %w(hearts diamonds clubs spades).freeze
 VALUES = %w(2 3 4 5 6 7 8 9 10 jack queen king ace).freeze
 WIN_SCORE = 21
 DELR_LIMIT = (WIN_SCORE - 4)
+WIN_ROUNDS = 5
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -53,37 +54,6 @@ def initial_round(player_deck, dealer_deck, deck)
     draw_card(deck, player_deck)
     draw_card(deck, dealer_deck)
   end
-end
-
-def display_cards_and_total_initial(player_deck, dealer_deck)
-  prompt "Your cards are: #{format_card_message(player_deck).join}"
-  prompt "Your total value is: #{calculate_total(player_deck)}"
-  puts ""
-  prompt "Dealer's cards are: #{format_card_message(dealer_deck).first}and  ?"
-end
-
-def display_cards_and_total_player(player_deck)
-  puts ""
-  prompt "Your cards are: #{format_card_message(player_deck).join}"
-  prompt "Your total value is: #{calculate_total(player_deck)}"
-  puts ""
-end
-
-def display_cards_and_total_dealer(dealer_deck)
-  puts ""
-  prompt "Dealer's cards are: #{format_card_message(dealer_deck).join}"
-  prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
-  puts ""
-end
-
-def format_card_message(deck)
-  output = []
-  symbols = { 'hearts' => '♥', 'clubs' => '♣',
-              'spades' => '♠', 'diamonds' => '♦' }
-  deck.each do |card|
-    output << "#{symbols[card[0]]} #{card[1]}  "
-  end
-  output
 end
 
 def hit_or_stay
@@ -140,6 +110,48 @@ def play_again?
   end
 end
 
+def display_cards_and_total_initial(player_deck, dealer_deck)
+  prompt "Your cards are: #{format_card_message(player_deck).join}"
+  prompt "Your total value is: #{calculate_total(player_deck)}"
+  puts ""
+  prompt "Dealer's cards are: #{format_card_message(dealer_deck).first}and  ?"
+end
+
+def display_cards_and_total_player(player_deck)
+  puts ""
+  prompt "Your cards are: #{format_card_message(player_deck).join}"
+  prompt "Your total value is: #{calculate_total(player_deck)}"
+  puts ""
+end
+
+def display_cards_and_total_dealer(dealer_deck)
+  puts ""
+  prompt "Dealer's cards are: #{format_card_message(dealer_deck).join}"
+  prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
+  puts ""
+end
+
+def format_card_message(deck)
+  output = []
+  symbols = { 'hearts' => '♥', 'clubs' => '♣',
+              'spades' => '♠', 'diamonds' => '♦' }
+  deck.each do |card|
+    output << "#{symbols[card[0]]} #{card[1]}  "
+  end
+  output
+end
+
+def display_game_over(player_score, dealer_score)
+  winner = player_score > dealer_score ? 'You' : 'Dealer'
+  puts ""
+  prompt "Your score is: #{player_score} / Dealer's score is: #{dealer_score}"
+  prompt "Game over. #{winner} won!"
+  puts ""
+end
+
+player_score = 0
+dealer_score = 0
+
 loop do
   clear_screen
   deck = initialize_deck
@@ -178,7 +190,30 @@ loop do
 
   display_result(player_deck, dealer_deck)
 
-  break unless play_again?
+  case determine_result(player_deck, dealer_deck)
+  when :player
+    player_score += 1
+  when :dealer
+    dealer_score += 1
+  when :player_busted
+    dealer_score += 1
+  when :dealer_busted
+    player_score += 1
+  end
+
+  if player_score == 5 || dealer_score == 5
+    display_game_over(player_score, dealer_score)
+    if play_again?
+      player_score = 0
+      dealer_score = 0
+    else
+      break
+    end
+  else
+    prompt "Your score is: #{player_score} / Dealer score is: #{dealer_score}"
+    prompt "Press enter to continue"
+    gets
+  end
 end
 
 prompt "Thank you for playing."
