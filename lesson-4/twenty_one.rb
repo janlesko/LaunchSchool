@@ -58,17 +58,22 @@ end
 def display_cards_and_total_initial(player_deck, dealer_deck)
   prompt "Your cards are: #{format_card_message(player_deck).join}"
   prompt "Your total value is: #{calculate_total(player_deck)}"
+  puts ""
   prompt "Dealer's cards are: #{format_card_message(dealer_deck).first}and  ?"
 end
 
 def display_cards_and_total_player(player_deck)
+  puts ""
   prompt "Your cards are: #{format_card_message(player_deck).join}"
   prompt "Your total value is: #{calculate_total(player_deck)}"
+  puts ""
 end
 
 def display_cards_and_total_dealer(dealer_deck)
+  puts ""
   prompt "Dealer's cards are: #{format_card_message(dealer_deck).join}"
   prompt "Dealer's total value is: #{calculate_total(dealer_deck)}"
+  puts ""
 end
 
 def format_card_message(deck)
