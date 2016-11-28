@@ -191,14 +191,14 @@ loop do
   display_result(player_deck, dealer_deck)
 
   case determine_result(player_deck, dealer_deck)
-  when :player
+  when :player, :dealer_busted
     player_score += 1
-  when :dealer
+  when :dealer, :player_busted
     dealer_score += 1
-  when :player_busted
-    dealer_score += 1
-  when :dealer_busted
-    player_score += 1
+  # when :player_busted
+  #   dealer_score += 1
+  # when :dealer_busted
+  #   player_score += 1
   end
 
   if player_score == 5 || dealer_score == 5
