@@ -159,6 +159,9 @@ loop do
   player_deck = []
   dealer_deck = []
 
+  prompt "First to #{WIN_ROUNDS} wins."
+  prompt "Your score is: #{player_score} / Dealer score is: #{dealer_score}"
+  puts ""
   initial_round(player_deck, dealer_deck, deck)
   display_cards_and_total_initial(player_deck, dealer_deck)
 
@@ -195,10 +198,6 @@ loop do
     player_score += 1
   when :dealer, :player_busted
     dealer_score += 1
-  # when :player_busted
-  #   dealer_score += 1
-  # when :dealer_busted
-  #   player_score += 1
   end
 
   if player_score == 5 || dealer_score == 5
