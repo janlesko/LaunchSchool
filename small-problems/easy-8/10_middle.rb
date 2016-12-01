@@ -1,13 +1,22 @@
+# def center_of(string)
+#   result = ''
+#   middle = string.size / 2
+#   if string.size.even?
+#     result << string[middle - 1]
+#     result << string[middle]
+#   else
+#     result << string[middle]
+#   end
+#   p result
+# end
+
 def center_of(string)
-  result = ''
-  middle = string.size / 2
-  if string.size.even?
-    result << string[middle - 1]
-    result << string[middle]
+  center_index = string.size / 2
+  if string.size.odd?
+    string[center_index]
   else
-    result << string[middle]
+    string[center_index - 1, 2]
   end
-  p result
 end
 
 p center_of('I love ruby') == 'e'
