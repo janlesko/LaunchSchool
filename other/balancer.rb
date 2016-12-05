@@ -7,7 +7,6 @@ def balancer(string)
     paren_count += 1 if char == "("
     paren_count -= 1 if char == ")"
 
-    
     return false if paren_count < 0
   end
   true
