@@ -1,8 +1,8 @@
 puts "What is the bill?"
-bill = gets.chomp.to_f
+bill = 200
 
 puts "What is the tip percentage?"
-percentage = gets.chomp.to_f
+percentage = 15
 
 tip = (bill * percentage / 100).round(2)
 total = (bill + tip).round(2)
