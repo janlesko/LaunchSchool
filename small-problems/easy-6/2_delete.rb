@@ -1,5 +1,5 @@
 def remove_vowels(array)
-  array.map { |string| string.delete "aeiouAEIOU" }
+  array.map { |string| string.delete('aeiouAEIOU') }
 end
 
 p remove_vowels(%w(abcdefghijklmnopqrstuvwxyz)) == %w(bcdfghjklmnpqrstvwxyz)
