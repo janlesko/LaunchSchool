@@ -10,4 +10,4 @@ def dot_separated_ip_address?(input_string)
    true
 end
 
-puts dot_separated_ip_address?("12.33.4.55.11")
+puts dot_separated_ip_address?("12.33.4.55")
