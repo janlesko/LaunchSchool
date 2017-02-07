@@ -36,7 +36,7 @@ class Computer < Player
   end
   
   def choose
-    self.move = ['rock', 'paper', 'scissors'].sample
+    self.move = %w(rock paper scissors).sample
   end
 end
 
@@ -55,6 +55,19 @@ class RPSGame
   def display_goodbye_message
     puts "Thanks for playing Rock, Plaper, Scissors. Good bye!"
   end
+  
+  def display_winner
+    puts "#{human.name} chose #{human.move}."
+    puts "#{computer.name} chose #{computer.move}."
+    
+    if human.move > computer.move
+      puts "#{human.name} won!"
+    elsif human.move < computer.move
+      puts "#{computer.name} won!"
+    else
+      puts "It's a tie!"
+    end
+  end 
   
   def display_winner
     puts "#{human.name} chose #{human.move}."
