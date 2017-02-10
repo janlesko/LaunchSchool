@@ -86,6 +86,26 @@ class Move
   end
 end
 
+class Rock
+
+end
+
+class Paper
+  
+end
+
+class Scissors
+  
+end
+
+class Lizard
+  
+end
+
+class Spock
+  
+end
+
 class RPSGame
   attr_accessor :human, :computer
 
