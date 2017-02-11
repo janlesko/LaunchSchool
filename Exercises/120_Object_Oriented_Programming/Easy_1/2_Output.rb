@@ -12,8 +12,6 @@ end
 
 name = 'Fluffy'
 fluffy = Pet.new(name)
-name << 'Huhu'
-name += 'Juju'
 puts fluffy.name
 puts fluffy
 puts fluffy.name
