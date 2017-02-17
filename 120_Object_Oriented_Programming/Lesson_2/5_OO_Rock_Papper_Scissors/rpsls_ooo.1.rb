@@ -9,7 +9,7 @@ WIN_COMBOS = { rock:     { lizard: "crushes",
                spock:    { scissors: "smashes",
                            rock: "vaporizes" } }.freeze
 
-MOVE_SYMS = { r: :rock, p: :paper, s: :scissors, l: :lizard, k: :spock }.freeze
+MOVE_SYMBOLS = { r: :rock, p: :paper, s: :scissors, l: :lizard, k: :spock }.freeze
 
 WIN_SCORE = 5
 
@@ -26,11 +26,10 @@ class Choice
 end
 
 class Player
-  attr_accessor :name, :move, :score
+  attr_accessor :name, :move
 
   def initialize
     set_name
-    @score = 0
   end
 end
 
@@ -50,10 +49,10 @@ class Human < Player
       puts "Select one by typying in letter in ( )."
       puts "(R)ock, (P)aper, (S)cissors, (L)izard, Spoc(k)"
       answer = gets.chomp.to_sym
-      break if MOVE_SYMS.keys.include?(answer)
+      break if MOVE_SYMBOLS.keys.include?(answer)
       puts "Sorry, that is not a valid choice."
     end
-    self.move = Choice.new(MOVE_SYMS[answer])
+    self.move = Choice.new(MOVE_SYMBOLS[answer])
   end
 end
 
@@ -82,14 +81,14 @@ end
 # never rock
 class Holly
   def strategy
-    (MOVE_SYMS.values - [:rock]).sample
+    (MOVE_SYMBOLS.values - [:rock]).sample
   end
 end
 
 # mainly scissors, rarely lizard
 class Cortana
   def strategy
-    (MOVE_SYMS.values + (MOVE_SYMS.values - [:lizard]) +
+    (MOVE_SYMBOLS.values + (MOVE_SYMBOLS.values - [:lizard]) +
     [:scissors, :scissors]).sample
   end
 end
@@ -101,7 +100,8 @@ class Hal9000
   end
 
   def strategy
-    (MOVE_SYMS.values - WIN_COMBOS[@human_move].keys + MOVE_SYMS.values).sample
+    (MOVE_SYMBOLS.values - WIN_COMBOS[@human_move].keys +
+    MOVE_SYMBOLS.values).sample
   end
 end
 
@@ -111,53 +111,82 @@ class Skynet
   attr_reader :human_moves
 
   def initialize(history)
-    @human_moves = history[:human]
-    @moves = MOVE_SYMS.values
+    @human_moves = history.first.last
+    @moves = MOVE_SYMBOLS.values
   end
 
   def strategy
     return moves.sample if human_moves.empty?
     human_moves.each do |human_move|
-      counter_moves = WIN_COMBOS[human_move.downcase].keys
+      counter_moves = WIN_COMBOS[human_move].keys
       counter_moves.each { |counter| moves << WIN_COMBOS[counter].keys }
     end
     moves.flatten.sample
   end
 end
 
-class History
-  attr_accessor :tracker
-  attr_reader :human, :computer
-
+class Score
   def initialize(human, computer)
-    @tracker = { human: [], computer: [], winner: [] }
-    @human = human
-    @computer = computer
+    @score_stats = { human => 0, computer => 0 }
   end
 
   def update(winner)
-    tracker[:human] << human.move.value.capitalize
-    tracker[:computer] << computer.move.value.capitalize
-    tracker[:winner] << winner
+    @score_stats[winner] += 1 unless winner == "None"
   end
 
-  def display_match_result
-    if tracker[:winner].last == "None"
-      return puts "It's a tie. Both players chose #{human.move.value}."
+  def display
+    puts
+    @score_stats.each { |k, v| print "| #{k}'s Score => #{v} |  " }
+    puts
+    puts
+  end
+
+  def max_reached?
+    @score_stats.values.include?(WIN_SCORE)
+  end
+end
+
+class History
+  attr_accessor :tracker
+
+  def initialize(human, computer)
+    @tracker = { human => [], computer => [], :winner => [] }
+  end
+
+  def update(human_move, computer_move, winner)
+    hum, com, win = tracker.keys
+    tracker[hum] << human_move
+    tracker[com] << computer_move
+    tracker[win] << winner
+  end
+
+  def find_action(winner_move, looser_move)
+    WIN_COMBOS[winner_move][looser_move]
+  end
+
+  def display_match_result(human_move)
+    winner = tracker[:winner].last
+    if winner == "None"
+      return puts "It's a tie. Both players chose #{human_move}."
     end
-    winner = tracker[:winner].last == human.name ? human : computer
-    looser = winner == human ? computer : human
-    action = WIN_COMBOS[winner.move.value][looser.move.value]
-    puts "#{winner.name}'s #{winner.move.value.capitalize} #{action} " \
-         "#{looser.name}'s #{looser.move.value.capitalize}"
+    winner_move = tracker[winner].last
+    looser = (tracker.keys - [winner]).first
+    looser_move = tracker[looser].last
+    action = find_action(winner_move, looser_move)
+    puts "#{winner}'s #{winner_move} #{action} #{looser}'s #{looser_move}."
   end
 
   def display_all
-    rounds = tracker[:winner].size
+    human, computer, winner = tracker.keys
+    rounds = tracker[winner].size
+    output_row(human, computer, winner, rounds)
+  end
+
+  def output_row(human, computer, winner, rounds)
     rounds.times do |index|
-      puts "Round #{index + 1}) #{human.name} chose " \
-           "#{tracker[:human][index]}. #{computer.name} chose " \
-           "#{tracker[:computer][index]}. Winner: #{tracker[:winner][index]}"
+      puts "Round #{index + 1}) #{human} chose #{tracker[human][index]}. " \
+         "#{computer} chose #{tracker[computer][index]}. " \
+         "Winner: #{tracker[winner][index]}"
     end
     puts
   end
@@ -200,7 +229,7 @@ class RPSGame
   def display_rules
     puts "<<<Rules>>>".rjust(25)
     WIN_COMBOS.each do |move, other|
-      print "#{move} => "
+      print move.to_s + " => "
       other.each do |counter, action|
         print "#{action} #{counter} / "
       end
@@ -223,9 +252,13 @@ class RPSGame
     %w(y yes).include?(answer)
   end
 
+  def history_update
+    history.update(human.move.value, computer.move.value, winner)
+  end
+
   def display_result
     history.display_all
-    history.display_match_result
+    history.display_match_result(human.move.value)
   end
 
   def computer_choose
@@ -233,25 +266,8 @@ class RPSGame
   end
 
   def reset
-    @history = History.new(human, computer)
-    human.score = 0
-    computer.score = 0
-  end
-
-  def display_score
-    puts
-    puts "| #{human.name}'s Score => #{human.score} | " \
-         "| #{computer.name}'s Score => #{computer.score} |"
-    puts
-  end
-
-  def update_score
-    human.score += 1 if winner == human.name
-    computer.score += 1 if winner == computer.name
-  end
-
-  def max_score_reached?
-    human.score == WIN_SCORE || computer.score == WIN_SCORE
+    @score = Score.new(human.name, computer.name)
+    @history = History.new(human.name, computer.name)
   end
 
   def start_match
@@ -260,11 +276,11 @@ class RPSGame
       clear_screen
       computer_choose
       determine_winner
-      history.update(winner)
+      history_update
       display_result
-      update_score
-      display_score
-      break if max_score_reached?
+      score.update(winner)
+      score.display
+      break if score.max_reached?
     end
   end
 
