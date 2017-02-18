@@ -13,7 +13,7 @@ MOVE_SYMS = { r: :rock, p: :paper, s: :scissors, l: :lizard, k: :spock }.freeze
 
 WIN_SCORE = 5
 
-class Choice
+class Move
   attr_reader :value
 
   def initialize(value)
@@ -57,7 +57,7 @@ class Human < Player
       break if MOVE_SYMS.keys.include?(answer)
       puts "Sorry, that is not a valid choice."
     end
-    self.move = Choice.new(MOVE_SYMS[answer])
+    self.move = Move.new(MOVE_SYMS[answer])
   end
 end
 
@@ -79,7 +79,7 @@ class Computer < Player
 
   def choose(human_move, history)
     personality = select_personality(human_move, history)
-    self.move = Choice.new(personality.strategy)
+    self.move = Move.new(personality.strategy)
   end
 end
 
