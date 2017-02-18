@@ -23,6 +23,10 @@ class Choice
   def >(other_player)
     WIN_COMBOS[value].keys.include?(other_player.value)
   end
+
+  def to_s
+    value.to_s.capitalize
+  end
 end
 
 class Player
@@ -118,7 +122,7 @@ class Skynet
   def strategy
     return moves.sample if human_moves.empty?
     human_moves.each do |human_move|
-      counter_moves = WIN_COMBOS[human_move.downcase].keys
+      counter_moves = WIN_COMBOS[human_move.value].keys
       counter_moves.each { |counter| moves << WIN_COMBOS[counter].keys }
     end
     moves.flatten.sample
@@ -130,36 +134,48 @@ class History
   attr_reader :human, :computer
 
   def initialize(human, computer)
-    @tracker = { human: [], computer: [], winner: [] }
+    @tracker = { human: [], computer: [], winners: [] }
     @human = human
     @computer = computer
   end
 
-  def update(winner)
-    tracker[:human] << human.move.value.capitalize
-    tracker[:computer] << computer.move.value.capitalize
-    tracker[:winner] << winner
+  def update(winner_name)
+    tracker[:human] << human.move
+    tracker[:computer] << computer.move
+    tracker[:winners] << winner_name
   end
 
   def display_match_result
-    if tracker[:winner].last == "None"
-      return puts "It's a tie. Both players chose #{human.move.value}."
+    if tracker[:winners].last == "None"
+      return puts "It's a tie. Both players chose #{human.move}."
     end
-    winner = tracker[:winner].last == human.name ? human : computer
-    looser = winner == human ? computer : human
-    action = WIN_COMBOS[winner.move.value][looser.move.value]
-    puts "#{winner.name}'s #{winner.move.value.capitalize} #{action} " \
-         "#{looser.name}'s #{looser.move.value.capitalize}"
+    puts "#{last_winner.name}'s #{last_winner.move} #{last_action} " \
+         "#{last_looser.name}'s #{last_looser.move}"
+  end
+
+  def last_winner
+    tracker[:winners].last == human.name ? human : computer
+  end
+
+  def last_looser
+    last_winner == human ? computer : human
+  end
+
+  def last_action
+    WIN_COMBOS[last_winner.move.value][last_looser.move.value]
   end
 
   def display_all
-    rounds = tracker[:winner].size
     rounds.times do |index|
       puts "Round #{index + 1}) #{human.name} chose " \
            "#{tracker[:human][index]}. #{computer.name} chose " \
-           "#{tracker[:computer][index]}. Winner: #{tracker[:winner][index]}"
+           "#{tracker[:computer][index]}. Winner: #{tracker[:winners][index]}"
     end
     puts
+  end
+
+  def rounds
+    tracker[:winners].size
   end
 end
 
