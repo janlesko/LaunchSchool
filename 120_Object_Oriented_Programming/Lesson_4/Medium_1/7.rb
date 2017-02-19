@@ -7,7 +7,7 @@ class Light
   end
 
   def self.information
-    return "I want to turn on the light with a brightness level of super high and a color of green"
+    "I want to turn on the light with a brightness level of super high and a color of green"
   end
-
 end
+

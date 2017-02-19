@@ -1,19 +1,25 @@
-class Cat
-  attr_accessor :type, :age
+class Computer
+  attr_accessor :template
 
-  def initialize(type)
-    @type = type
-    @age  = 0
+  def create_template
+    @template = "template 14231"
   end
 
-  def make_one_year_older
-    @age += 1
-    self.age += 1
+  def show_template
+    template
   end
 end
 
-garen = Cat.new("persian")
+class Computer
+  attr_accessor :template
 
-garen.make_one_year_older
+  def create_template
+    self.template = "template 14231"
+  end
 
-p garen.age
+  def show_template
+    self.template
+  end
+end
+
+# self from self.template in second case should be removed as it serves no purpose

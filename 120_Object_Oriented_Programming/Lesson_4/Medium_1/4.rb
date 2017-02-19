@@ -1,12 +1,20 @@
-class Cat
-  def initialize(type)
-    @type = type
-  end
-  
-  def to_s
-    "I am a #{@type} cat"
+class Greeting
+  def greet(string)
+    puts string
   end
 end
 
-garen = Cat.new("tabby")
-puts garen
+class Hello < Greeting
+  def hi
+    greet "Hello"
+  end
+end
+
+class Goodbye < Greeting
+  def bye
+    greet "Goodbye"
+  end
+end
+
+Hello.new.hi
+Goodbye.new.bye
