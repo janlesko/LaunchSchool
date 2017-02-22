@@ -154,11 +154,16 @@ class Computer < Player
   end
 
   def detect_win_square(line, board, marker)
-    if board.values_at(*line).map(&:marker).count(marker) == 2
+    if markers_on_line(board, line).count(marker) == 2
       board.select do |k, v|
         line.include?(k) && v.marker == Square::INITIAL_MARKER
       end.keys.first
     end
+  end
+
+  def markers_on_line(board, line)
+    board_line = board.values_at(*line)
+    board_line.map(&:marker)
   end
 
   def take_middle(board)
