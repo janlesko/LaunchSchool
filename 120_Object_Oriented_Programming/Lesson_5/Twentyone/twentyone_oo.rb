@@ -1,38 +1,42 @@
 class Card
-  FACES = %w(2 3 4 5 6 7 8 9 10 jack queen king ace)
-  SUITS = { 'hearts' => '♥', 'clubs' => '♣',
-            'spades' => '♠', 'diamonds' => '♦' }
+  VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A)
+  SUITS = %w(♥ ♣ ♠ ♦)
 
-  attr_reader :all_cards
+  attr_reader :value, :suit
 
-  def initialize
-    @all_cards = SUITS.values.product(FACES)
+  def initialize(value, suit)
+    @value = value
+    @suit = suit
+  end
+
+  def to_s
+    "#{suit} #{value} "
   end
 end
 
 class Deck
-  TOO_FEW_CARDS = 10
+  TOO_FEW_CARDS_IN_DECK = 52
 
-  attr_accessor :deck
+  attr_accessor :cards
 
   def initialize
-    @deck = new_deck.shuffle
+    @cards = new_card_deck.shuffle
   end
 
-  def new_deck
-    Card.new.all_cards
+  def new_card_deck
+    Card::VALUES.product(Card::SUITS).map { |val, suit| Card.new(val, suit) }
   end
 
   def almost_empty?
-    deck.size < TOO_FEW_CARDS
+    cards.size < TOO_FEW_CARDS_IN_DECK
   end
 
   def fill
-    @deck += new_deck.shuffle
+    @cards += new_card_deck.shuffle
   end
 
   def deal_one
-    deck.pop
+    cards.pop
   end
 end
 
@@ -46,19 +50,19 @@ class Participant
     @score = 0
   end
 
-  def draw_card(new_card)
+  def draw(new_card)
     cards << new_card
   end
 
   def busted?
-    total > Twentyone::WIN_SCORE
+    total > TwentyOne::WIN_SCORE
   end
 
   def total
-    values = cards.map { |card| card[1] }
+    values = cards.map(&:value)
     total_value = 0
     values.each do |value|
-      total_value += if value == 'ace'
+      total_value += if value == "A"
                        11
                      elsif value.to_i.zero?
                        10
@@ -70,8 +74,8 @@ class Participant
   end
 
   def adjust_for_aces(total_value, values)
-    values.count("ace").times do
-      total_value -= 10 if total_value > Twentyone::WIN_SCORE
+    values.count("A").times do
+      total_value -= 10 if total_value > TwentyOne::WIN_SCORE
     end
     total_value
   end
@@ -98,12 +102,12 @@ end
 
 class Dealer < Participant
   def show_initial_hand
-    puts "#{self.class}'s cards: #{cards[0].join(' ')} and ?"
+    puts "#{self.class}'s cards: #{cards.first} and ?"
     puts ""
   end
 end
 
-class Twentyone
+class TwentyOne
   WIN_SCORE = 21
   DEALER_LIMIT = 17
   WIN_ROUNDS = 5
@@ -141,15 +145,15 @@ class Twentyone
 
   def deal_cards
     2.times do
-      player.draw_card(deck.deal_one)
-      dealer.draw_card(deck.deal_one)
+      player.draw(deck.deal_one)
+      dealer.draw(deck.deal_one)
     end
   end
 
   def player_moves
     loop do
       case player.hit_or_stay
-      when "h" then player.draw_card(deck.deal_one)
+      when "h" then player.draw(deck.deal_one)
       when "s" then break
       end
       clear
@@ -166,7 +170,7 @@ class Twentyone
         puts "Dealer stays!"
         break
       else
-        dealer.draw_card(deck.deal_one)
+        dealer.draw(deck.deal_one)
         puts "Dealer hits!"
         sleep(2)
       end
@@ -281,4 +285,4 @@ class Twentyone
   end
 end
 
-Twentyone.new.play
+TwentyOne.new.play
