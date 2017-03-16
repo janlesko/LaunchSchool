@@ -24,16 +24,16 @@ ENCRYPTED_PIONEERS = [
 ].freeze
 
 def rot13(encrypted_name)
-  encrypted_name.chars.inject("") do |result, char|
-    result + decrypt(char)
+  encrypted_name.chars.inject('') do |result, char|
+    result + decrypter(char)
   end
 end
 
-def decrypt(char)
+def decrypter(char)
   case char
   when 'a'..'m', 'A'..'M' then (char.ord + 13).chr
   when 'n'..'z', 'N'..'Z' then (char.ord - 13).chr
-  else                          char
+  else                         char
   end
 end
 

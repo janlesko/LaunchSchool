@@ -1,0 +1,14 @@
+
+[1mFrom:[0m /home/ubuntu/workspace/myfiles/repos/launchschool/Exercises/Challenges/Easy_1/2_Sieve_of_Erarosthenes/sieve.rb @ line 23 Sieve#primes:
+
+    [1;34m20[0m: [32mdef[0m [1;34mprimes[0m
+    [1;34m21[0m:   @numbers.each [32mdo[0m |prime|
+    [1;34m22[0m:     @numbers.reject! [32mdo[0m |num|
+ => [1;34m23[0m:       binding.pry
+    [1;34m24[0m:       (num != prime) && (num % prime == [1;34m0[0m)
+    [1;34m25[0m:       binding.pry
+    [1;34m26[0m:     [32mend[0m
+    [1;34m27[0m:   [32mend[0m
+    [1;34m28[0m:   @numbers
+    [1;34m29[0m: [32mend[0m
+
