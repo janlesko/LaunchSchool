@@ -1,3 +1,4 @@
+require 'pry'
 class Sieve
   def initialize(size)
     @numbers = 2.upto(size).to_a
@@ -17,6 +18,7 @@ class Sieve
   
   def primes
     @numbers.each do |prime|
+      binding.pry
       @numbers.reject! do |num|
         (num != prime) && (num % prime == 0)
       end
