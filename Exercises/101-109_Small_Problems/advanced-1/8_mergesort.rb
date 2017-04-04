@@ -7,18 +7,26 @@ def merge_sort(ary)
   sub_array1 = merge_sort(sub_array1)
   sub_array2 = merge_sort(sub_array2)
   
-  p sub_array1
-  p sub_array2
+  puts "#{sub_array1} sub one"
+  puts "#{sub_array2} sub two"
   
-  # merge(sub_array1, sub_array2)  
+  merge(sub_array1, sub_array2)  
 end
 
-# def merge(ary1, ary2)
-#   result = []
-#   index2 = 0
-  
-#   ary1.each do |num|
-#     while index2 < ary2.size && ary2[index2] 
-# end
+def merge(array1, array2)
+  index2 = 0
+  result = []
 
-merge_sort([9, 5, 7, 1])
+  array1.each do |value|
+    while index2 < array2.size && array2[index2] <= value
+      result << array2[index2]
+      index2 += 1
+    end
+    result << value
+  end
+
+  result.concat(array2[index2..-1])
+end
+
+p merge_sort([1, 5, 3, 4])
+p merge_sort(%w(Sue Pete Alice Tyler Rachel Kim Bonnie))
