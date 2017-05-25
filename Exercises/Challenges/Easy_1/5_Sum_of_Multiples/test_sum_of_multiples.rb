@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require_relative 'sum_of_multiples'
+require_relative 'sum_of_multiples.1'
 
 class SumTest < Minitest::Test
   def test_sum_to_1
