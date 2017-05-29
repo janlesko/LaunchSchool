@@ -15,24 +15,22 @@ class Board
     lines.each { |line| mines += line[(index - 1)..(index + 1)].count('*') }
     mines.zero? ? ' ' : mines
   end
-  
+
   def self.faulty_lines?(inp)
     different_lenght?(inp) || faulty_border?(inp) || invalid_char?(inp)
   end
-  
+
   def self.different_lenght?(inp)
-    inp.any? { |line| line.size != inp.first.size }
+    inp.map(&:size).uniq.size != 1
   end
-  
+
   def self.faulty_border?(inp)
-    !(inp.first =~ /\+-+\+/ && inp.last =~ /\+-+\+/)
+    top_and_bottom = inp.first =~ /\+-+\+/ && inp.last =~ /\+-+\+/
+    middle = inp[1..-2].all? { |line| line =~ /\A\|[ *]+\|\z/ }
+    !(top_and_bottom && middle)
   end
-  
+
   def self.invalid_char?(inp)
     !(inp.all? { |line| line =~ /[+-|* ]/ })
   end
 end
-
-# inp = ['+-----+', '*   * |', '+-- --+']
-
-# p Board.transform(inp)
