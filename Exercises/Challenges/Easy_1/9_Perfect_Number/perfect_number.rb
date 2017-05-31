@@ -9,10 +9,8 @@ module PerfectNumber
       'deficient'
     end
   end
-  
+
   def self.sum_of_divisors(number)
-    (1...number).select { |divisor| number % divisor == 0 }.inject(:+)
+    (1...number).select { |divisor| (number % divisor).zero? }.inject(:+)
   end
 end
-
-p PerfectNumber.classify(12)

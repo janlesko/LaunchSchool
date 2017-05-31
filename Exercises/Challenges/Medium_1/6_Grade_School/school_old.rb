@@ -1,4 +1,12 @@
 class School
+  # def initialize
+  #   @roster = Hash.new { |roster, grade| roster[grade] = [] }
+  # end
+
+  # def add(student, grade)
+  #   roster[grade] << student
+  # end
+
   def initialize
     @list = Hash.new([])
   end
