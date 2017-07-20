@@ -14,11 +14,15 @@
     <ul>
       <% @results.each do |result| %>
         <li>
-          <h4><a href="/chapters/<%= result[:number] %>"><%= result[:name] %></a></h4>
+          <h4><%= result[:name] %></h4>
           <ul>
-              <% result[:paragraphs].each do |paragraph| %>
-                <li><%= paragraph %></li>
-              <% end %>
+            <% result[:paragraphs].each do |id, text| %>
+              <li>
+                <a href="/chapters/<%= result[:number] %>#p<%= id %>">
+                  <%= highlight(text, params[:query]) %>
+                </a>
+              </li>
+            <% end %>
           </ul>
         </li>
       <% end %>

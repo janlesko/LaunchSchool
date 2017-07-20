@@ -23,11 +23,7 @@ get "/chapters/:number" do
   erb :chapter
 end
 
-def extract_paragraph(chapter, query)
-  chapter.split("\n\n").select { |par| par.match(query) }
-end
-
-def each_chapter(&block)
+def each_chapter
   @contents.each_with_index do |name, index|
     number = index + 1
     chapter = File.read("data/chp#{number}.txt")
@@ -38,13 +34,14 @@ end
 def chapters_matching(query)
   results = []
 
-  return results if !query || query.empty?
+  return results unless query
 
   each_chapter do |number, name, chapter|
-    if chapter.include?(query)
-      paragraphs = extract_paragraph(chapter, query)
-      results << {number: number, name: name, paragraphs: paragraphs}
+    matches = {}
+    chapter.split("\n\n").each_with_index do |paragraph, index|
+      matches[index] = paragraph if paragraph.include?(query)
     end
+      results << {number: number, name: name, paragraphs: matches} if matches.any?
   end
 
   results
@@ -55,14 +52,18 @@ get "/search" do
   erb :search
 end
 
+not_found do
+  redirect "/"
+end
+
 helpers do
   def in_paragraphs(chapter)
     chapter.split("\n\n").map.with_index do |par, index| 
       "<p id=p#{index + 1}>#{par}</p>"
     end.join
   end
-end
 
-not_found do
-  redirect "/"
+  def highlight(text, term)
+    text.gsub(term, %(<strong>#{term}</strong>))
+  end
 end
