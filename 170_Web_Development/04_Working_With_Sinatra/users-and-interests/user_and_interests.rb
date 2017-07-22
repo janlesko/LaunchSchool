@@ -8,7 +8,16 @@ before do
 end
 
 get "/" do
-  @user_names =
+  @user_names = @content.keys
 
-  erb :layout
+  erb :home
+end
+
+get "user/:name" do
+  user = params[:name]
+
+  @email = @content.fetch(user.to_sym)[:email]
+  @interests = @content.fetch(user.to_sym)[:interests]
+
+  erb :user
 end
