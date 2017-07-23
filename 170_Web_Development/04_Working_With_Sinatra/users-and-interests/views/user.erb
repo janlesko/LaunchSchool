@@ -1,1 +1,14 @@
-<h1><%= @email %></h1>
+<h2><%= @email %></h2>
+
+<h3>Interests: </h3>
+
+<p><%= @interests %></p>
+
+<% @other_names.each do |name| %>
+    <ul>
+      <li>
+        <a href="/user/<%= name %>"><%= name %></a>
+      </li>
+    </ul>
+<% end %>
+
