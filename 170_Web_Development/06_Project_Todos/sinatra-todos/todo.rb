@@ -43,8 +43,9 @@ end
 # Create a new list
 post "/lists" do
   list_name = params[:list_name].strip
+  error = error_for_list_name(list_name)
 
-  if error = error_for_list_name(list_name)
+  if error
     session[:error] = error
     erb :new_list, layout: :layout
   else
@@ -52,4 +53,9 @@ post "/lists" do
     session[:success] = "The list has been created."
     redirect "/lists"
   end
+end
+
+get "/lists/:id" do
+  @list = session[:lists][params[:id].to_i]
+  erb :list, layout: :layout
 end
